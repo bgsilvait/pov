@@ -1,0 +1,55 @@
+global:
+  clusterConfig:
+    name: [CLUSTER_NAME]
+  sysdig:
+    accessKey: [ACCESS_KEY]
+    region: eu1
+  kspm:
+    deploy: true  
+  namespace: "sysdig-agent"
+agent:
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/infra
+    operator: Exists
+  - effect: NoExecute
+    key: node-role.kubernetes.io/infra
+    operator: Exists
+  slim:
+      enabled: true
+  ebpf:
+    enabled: true
+  sysdig:
+   settings:
+      collector: ingest-eu1.app.sysdig.com
+      collector_port: 6443
+nodeAnalyzer:
+  nodeAnalyzer:
+    tolerations:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/master
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/infra
+      operator: Exists
+    - effect: NoExecute
+      key: node-role.kubernetes.io/infra
+      operator: Exists
+    apiEndpoint: eu1.app.sysdig.com
+    runtimeScanner:
+      deploy: true
+      settings:
+        eveEnabled: true
+    hostScanner:
+      deploy: true
+      scanOnStart: true
+    benchmarkRunner:
+      deploy: false
+    kspmAnalyzer:
+    hostAnalyzer:
+      deploy: false
+    imageAnalyzer:
+      deploy: false
+kspmCollector:
+  apiEndpoint: eu1.app.sysdig.com
