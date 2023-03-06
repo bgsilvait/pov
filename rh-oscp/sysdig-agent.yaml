@@ -8,6 +8,8 @@ global:
     deploy: true  
   namespace: "sysdig-agent"
 agent:
+  serviceAccount:
+    create: false
   tolerations:
   - effect: NoSchedule
     key: node-role.kubernetes.io/master
@@ -27,6 +29,8 @@ agent:
       collector_port: 6443
 nodeAnalyzer:
   nodeAnalyzer:
+    serviceAccount:
+      create: false
     tolerations:
     - effect: NoSchedule
       key: node-role.kubernetes.io/master
@@ -46,10 +50,11 @@ nodeAnalyzer:
       scanOnStart: true
     benchmarkRunner:
       deploy: false
-    kspmAnalyzer:
     hostAnalyzer:
       deploy: false
     imageAnalyzer:
       deploy: false
 kspmCollector:
+  serviceAccount:
+    create: false
   apiEndpoint: eu1.app.sysdig.com
