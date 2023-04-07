@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: stg
+  labels:
+    name: stg
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: threatgen
+  namespace: stg
+  labels:
+    app: threatgen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: threatgen
+  template:
+    metadata:
+      labels:
+        app: threatgen
+    spec:
+      containers:
+      - name: threatgen
+        image: dockerbadboy/art:latest
+        command: ["pwsh", "-c", "(./RunTests.ps1 STDIN.NETWORK)"]
+        securityContext:
+          privileged: true
+      nodeSelector:
+        kubernetes.io/os: linux
