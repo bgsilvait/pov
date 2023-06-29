@@ -8,6 +8,10 @@ global:
     deploy: true  
   namespace: "sysdig-agent"
 agent:
+  monitor:
+    enabled: false
+  secure:
+    enabled: true
   serviceAccount:
     create: false
   tolerations:
