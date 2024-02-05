@@ -1,0 +1,39 @@
+global:
+  clusterConfig:
+    name: [CLUSTER_NAME]
+  sysdig:
+    accessKey: [ACCESS_KEY]
+    region: eu1
+  kspm:
+    deploy: true  
+  namespace: "sysdig-agent"
+nodeAnalyzer:
+  enabled: true
+  secure:
+    vulnerabilityManagement:
+      newEngineOnly: true
+  nodeAnalyzer:
+    apiEndpoint: eu1.app.sysdig.com
+    extraVolumes:
+      volumes:
+        - name: socketpath
+          hostPath:
+            path: /run/k3s/containerd/containerd.sock
+    runtimeScanner:
+      deploy: true
+      settings:
+        eveEnabled: true
+      extraMounts:
+        - name: socketpath
+          mountPath: /var/run/containerd/containerd.sock
+    hostScanner:
+      deploy: true
+      scanOnStart: true
+    benchmarkRunner:
+      deploy: false
+    hostAnalyzer:
+      deploy: false
+    imageAnalyzer:
+      deploy: false
+kspmCollector:
+  apiEndpoint: eu1.app.sysdig.com
