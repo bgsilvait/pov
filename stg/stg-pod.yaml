@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: threatgen
+spec:
+  containers:
+  - name: threatgen
+    image: dockerbadboy/art:latest
+    command: ["pwsh", "-c", "(./RunTests.ps1 BASE64.CLI)"]
+    securityContext:
+      privileged: true
