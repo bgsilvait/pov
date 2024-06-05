@@ -1,11 +1,11 @@
 provider "azurerm" {
   features { }
   subscription_id = "[Target Azure Subscription ID]"
-  tenant_id       = "[Target Azure Tenant ID]"
+  tenant_id       = "[Target Azure Tenand ID]"
 }
 
 provider "azuread" {
-  tenant_id       = "[Target Azure Tenant ID]"
+  tenant_id       = "[Target Azure Tenand ID]"
 }
 
 module "subscription-posture" {
@@ -17,11 +17,18 @@ module "subscription-posture" {
 module "single-subscription-threat-detection" {
   source               = "sysdiglabs/secure/azurerm//modules/services/event-hub-data-source"
   subscription_id      = "[Target Azure Subscription ID]"
-  region               = "Italy North"
+  region               = "[Sysdig Region ID]"
   sysdig_client_id     = "[Sysdig External ID]"
-  event_hub_namespace_name = "sysdig-secure-events-0tla"
-  resource_group_name = "sysdig-secure-events-0tla"
-  diagnostic_settings_name = "sysdig-secure-events-0tla"
+  event_hub_namespace_name = "sysdig-secure-events-kp0i"
+  resource_group_name = "sysdig-secure-events-kp0i"
+  diagnostic_settings_name = "sysdig-secure-events-kp0i"
+}
+
+module "single-account-agentless-scanning" {
+  source                       = "sysdiglabs/secure/azurerm//modules/services/host-scanner"
+  subscription_id              = "[Target Azure Subscription ID]"
+  sysdig_tenant_id             = "[Sysdig Tenant ID]"
+  sysdig_service_principal_id  = "[Sysdig Service Principal ID]"
 }
 
 terraform {
@@ -29,7 +36,7 @@ terraform {
   required_providers {
     sysdig = {
       source  = "sysdiglabs/sysdig"
-      version = "~> 1.23.2"
+      version = "~> 1.24.2"
     }
   }
 }
@@ -54,6 +61,11 @@ resource "sysdig_secure_cloud_auth_account" "azure_subscription_[Target Azure Su
     secure_config_posture {
       enabled    = true
       components = ["COMPONENT_SERVICE_PRINCIPAL/secure-posture"]
+    }
+
+    secure_agentless_scanning {
+      enabled    = true
+      components = ["COMPONENT_SERVICE_PRINCIPAL/secure-scanning"]
     }
   }
   component {
@@ -85,8 +97,24 @@ resource "sysdig_secure_cloud_auth_account" "azure_subscription_[Target Azure Su
       }
     })
   }
+  component {
+    type     = "COMPONENT_SERVICE_PRINCIPAL"
+    instance = "secure-scanning"
+    service_principal_metadata = jsonencode({
+      azure = {
+        active_directory_service_principal= {
+          account_enabled           = true
+          display_name              = module.subscription-posture.service_principal_display_name
+          id                        = module.subscription-posture.service_principal_id
+          app_display_name          = module.subscription-posture.service_principal_app_display_name
+          app_id                    = module.subscription-posture.service_principal_client_id
+          app_owner_organization_id = module.subscription-posture.service_principal_app_owner_organization_id
+        }
+      }
+    })
+  }
   provider_alias     = module.subscription-posture.subscription_alias
-  provider_tenant_id = "[Target Azure Tenant ID]"
-  depends_on         = [module.single-subscription-threat-detection, module.subscription-posture]
+  provider_tenant_id = "[Target Azure Tenand ID]"
+  depends_on         = [module.single-account-agentless-scanning, module.single-subscription-threat-detection, module.subscription-posture]
 }
 
