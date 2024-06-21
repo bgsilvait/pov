@@ -1,0 +1,43 @@
+global:
+  clusterConfig:
+    name: [CLUSTER_NAME]
+  sysdig:
+    accessKey: [ACCESS_KEY]
+    region: eu1
+  kspm:
+    deploy: true  
+  namespace: "sysdig-agent"
+agent:
+  monitor:
+    enabled: false
+  secure:
+    enabled: true
+  ebpf:
+    enabled: true
+nodeAnalyzer:
+  enabled: true
+  nodeAnalyzer:
+    runtimeScanner:
+      deploy: false
+    hostScanner:
+      deploy: true
+      scanOnStart: true
+    benchmarkRunner:
+      deploy: false
+    hostAnalyzer:
+      deploy: false
+kspmCollector:
+  enabled: false
+admissionController:
+  enabled: false
+clusterShield:
+  enabled: true
+  cluster_shield:
+    log_level: warn
+    features:
+      audit:
+        enabled: true
+      container_vulnerability_management:
+        enabled: true
+      posture:
+        enabled: true
