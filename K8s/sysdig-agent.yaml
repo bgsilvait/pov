@@ -6,7 +6,6 @@ global:
     region: eu1
   kspm:
     deploy: true  
-  namespace: "sysdig-agent"
 agent:
   monitor:
     enabled: false
@@ -25,6 +24,8 @@ nodeAnalyzer:
     benchmarkRunner:
       deploy: false
     hostAnalyzer:
+      deploy: false
+    imageAnalyzer:
       deploy: false
 kspmCollector:
   enabled: false
