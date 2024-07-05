@@ -1,11 +1,11 @@
 provider "azurerm" {
   features { }
   subscription_id = "[Target Azure Subscription ID]"
-  tenant_id       = "[Target Azure Tenand ID]"
+  tenant_id       = "[Target Azure Tenant ID]"
 }
 
 provider "azuread" {
-  tenant_id       = "[Target Azure Tenand ID]"
+  tenant_id       = "[Target Azure Tenant ID]"
 }
 
 module "subscription-posture" {
@@ -114,7 +114,7 @@ resource "sysdig_secure_cloud_auth_account" "azure_subscription_[Target Azure Su
     })
   }
   provider_alias     = module.subscription-posture.subscription_alias
-  provider_tenant_id = "[Target Azure Tenand ID]"
+  provider_tenant_id = "[Target Azure Tenant ID]"
   depends_on         = [module.single-account-agentless-scanning, module.single-subscription-threat-detection, module.subscription-posture]
 }
 
