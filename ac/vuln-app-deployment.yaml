@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vulnapp-deployment
+  labels:
+    app: log4j-vuln-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log4j-vuln-app
+  template:
+    metadata:
+      labels:
+        app: log4j-vuln-app
+    spec:
+      containers:
+      - name: log4j-vuln-app
+        image: gphomelab2021/log4j-vuln-app
