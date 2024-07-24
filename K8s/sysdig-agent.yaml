@@ -1,18 +1,21 @@
 global:
-  clusterConfig:
-    name: [CLUSTER_NAME]
   sysdig:
     accessKey: [ACCESS_KEY]
     region: eu1
+  clusterConfig:
+    name: [CLUSTER_NAME]
   kspm:
     deploy: true  
-agent:
-  monitor:
-    enabled: false
-  secure:
-    enabled: true
-  ebpf:
-    enabled: true
+
+clusterScanner:
+  enabled: false
+
+kspmCollector:
+  enabled: false
+
+admissionController:
+  enabled: false
+
 nodeAnalyzer:
   enabled: true
   nodeAnalyzer:
@@ -24,18 +27,34 @@ nodeAnalyzer:
     benchmarkRunner:
       deploy: false
     hostAnalyzer:
-      deploy: false
+      deploy: true
     imageAnalyzer:
       deploy: false
-kspmCollector:
-  enabled: false
-admissionController:
-  enabled: false
+
+agent:
+  monitor:
+    enabled: false
+  ebpf:
+    enabled: true
+    kind: universal_ebpf # If node kernel is >5.8
+  sysdig:
+    settings:
+      feature:
+        mode: secure_light
+  resources:
+    limits:
+      cpu: 1
+      memory: 1000Mi
+    requests:
+      cpu: 50m
+      memory: 100Mi
+
 clusterShield:
   enabled: true
   cluster_shield:
-    log_level: warn
     features:
+      admission_control:
+        enabled: false
       audit:
         enabled: true
       container_vulnerability_management:
