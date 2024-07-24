@@ -37,6 +37,7 @@ agent:
   ebpf:
     enabled: true
     kind: universal_ebpf # If node kernel is >5.8
+  privileged: false # If node kernel is >5.8 or OS is RHCOS
   sysdig:
     settings:
       feature:
