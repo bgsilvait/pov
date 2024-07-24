@@ -1,9 +1,9 @@
 global:
   sysdig:
-    accessKey: [ACCESS_KEY]
+    accessKey: CHANGE_ME_WITH_ACCESS_KEY
     region: eu1
   clusterConfig:
-    name: [CLUSTER_NAME]
+    name: CHANGE_ME_WITH_CLUSTER_NAME
   kspm:
     deploy: true  
 
@@ -17,19 +17,17 @@ admissionController:
   enabled: false
 
 nodeAnalyzer:
-  enabled: true
   nodeAnalyzer:
-    runtimeScanner:
-      deploy: false
-    hostScanner:
-      deploy: true
-      scanOnStart: true
     benchmarkRunner:
       deploy: false
-    hostAnalyzer:
+    runtimeScanner:
+      deploy: false 
+  hostScanner:
       deploy: true
-    imageAnalyzer:
-      deploy: false
+      scanOnStart: true
+  secure:
+    vulnerabilityManagement:
+      newEngineOnly: true
 
 agent:
   monitor:
