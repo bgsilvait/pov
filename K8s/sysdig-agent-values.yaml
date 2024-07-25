@@ -7,9 +7,6 @@ global:
   kspm:
     deploy: true  
 
-clusterScanner:
-  enabled: false
-
 kspmCollector:
   enabled: false
 
@@ -23,7 +20,6 @@ nodeAnalyzer:
     runtimeScanner:
       deploy: false 
   hostScanner:
-      deploy: true
       scanOnStart: true
   secure:
     vulnerabilityManagement:
