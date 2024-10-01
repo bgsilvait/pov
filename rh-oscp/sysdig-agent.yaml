@@ -1,41 +1,27 @@
 global:
-  clusterConfig:
-    name: [CLUSTER_NAME]
   sysdig:
-    accessKey: [ACCESS_KEY]
+    accessKey: CHANGE_ME_WITH_ACCESS_KEY
     region: eu1
+  clusterConfig:
+    name: CHANGE_ME_WITH_CLUSTER_NAME
   kspm:
     deploy: true  
-  namespace: "sysdig-agent"
-agent:
-  monitor:
-    enabled: false
-  secure:
-    enabled: true
-  serviceAccount:
-    create: false
-  tolerations:
-  - effect: NoSchedule
-    key: node-role.kubernetes.io/master
-  - effect: NoSchedule
-    key: node-role.kubernetes.io/infra
-    operator: Exists
-  - effect: NoExecute
-    key: node-role.kubernetes.io/infra
-    operator: Exists
-  slim:
-      enabled: true
-  ebpf:
-    enabled: true
-  sysdig:
-   settings:
-      collector: ingest-eu1.app.sysdig.com
-      collector_port: 6443
+
+kspmCollector:
+  enabled: false
+
+admissionController:
+  enabled: false
+
 nodeAnalyzer:
   nodeAnalyzer:
-    serviceAccount:
-      create: false
-    tolerations:
+    benchmarkRunner:
+      deploy: false
+    runtimeScanner:
+      deploy: false 
+    hostScanner:
+      scanOnStart: true
+    tolerations:  # To install KSPM and Host scanner on Master and Infra nodes
     - effect: NoSchedule
       key: node-role.kubernetes.io/master
     - effect: NoSchedule
@@ -44,21 +30,47 @@ nodeAnalyzer:
     - effect: NoExecute
       key: node-role.kubernetes.io/infra
       operator: Exists
-    apiEndpoint: eu1.app.sysdig.com
-    runtimeScanner:
-      deploy: true
-      settings:
-        eveEnabled: true
-    hostScanner:
-      deploy: true
-      scanOnStart: true
-    benchmarkRunner:
-      deploy: false
-    hostAnalyzer:
-      deploy: false
-    imageAnalyzer:
-      deploy: false
-kspmCollector:
-  serviceAccount:
-    create: false
-  apiEndpoint: eu1.app.sysdig.com
+  secure:
+    vulnerabilityManagement:
+      newEngineOnly: true
+
+agent:
+  monitor:
+    enabled: false
+  ebpf:
+    enabled: true
+    kind: universal_ebpf # If node kernel is >5.8
+  privileged: false # If node kernel is >5.8 or OS is RHCOS
+  sysdig:
+    settings:
+      feature:
+        mode: secure_light
+  resources:
+    limits:
+      cpu: 1
+      memory: 1000Mi
+    requests:
+      cpu: 50m
+      memory: 100Mi
+  tolerations:  # To install the agent on Master and Infra nodes
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/infra  
+    operator: Exists
+  - effect: NoExecute
+    key: node-role.kubernetes.io/infra
+    operator: Exists
+
+clusterShield:
+  enabled: true
+  cluster_shield:
+    features:
+      admission_control:
+        enabled: false
+      audit:
+        enabled: false
+      container_vulnerability_management:
+        enabled: true
+      posture:
+        enabled: true
