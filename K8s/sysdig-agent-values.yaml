@@ -19,7 +19,7 @@ nodeAnalyzer:
       deploy: false
     runtimeScanner:
       deploy: false 
-  hostScanner:
+    hostScanner:
       scanOnStart: true
   secure:
     vulnerabilityManagement:
@@ -51,7 +51,7 @@ clusterShield:
       admission_control:
         enabled: false
       audit:
-        enabled: true
+        enabled: false
       container_vulnerability_management:
         enabled: true
       posture:
