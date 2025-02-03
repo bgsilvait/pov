@@ -1,0 +1,73 @@
+global:
+  sysdig:
+    accessKey: CHANGE_ME_WITH_ACCESS_KEY
+    region: eu1
+  clusterConfig:
+    name: CHANGE_ME_WITH_CLUSTER_NAME
+  kspm:
+    deploy: true  
+
+kspmCollector:
+  enabled: false
+
+admissionController:
+  enabled: false
+
+nodeAnalyzer:
+  nodeAnalyzer:
+    benchmarkRunner:
+      deploy: false
+    runtimeScanner:
+      deploy: false 
+    hostScanner:
+      scanOnStart: true
+      resources:
+        requests:
+          cpu: 150m
+          memory: 100Mi
+        limits:
+          cpu: 200m
+          memory: 150Mi
+    kspmAnalyzer:
+      resources:
+        requests:
+          cpu: 150m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 1536Mi  
+  secure:
+    vulnerabilityManagement:
+      newEngineOnly: true
+
+agent:
+  monitor:
+    enabled: false
+  ebpf:
+    enabled: true
+    kind: universal_ebpf # If node kernel is >5.8
+  privileged: false # If node kernel is >5.8 or OS is RHCOS
+  sysdig:
+    settings:
+      feature:
+        mode: secure
+  resources:
+    limits:
+      cpu: 1
+      memory: 1000Mi
+    requests:
+      cpu: 50m
+      memory: 100Mi
+
+clusterShield:
+  enabled: true
+  cluster_shield:
+    features:
+      admission_control:
+        enabled: false
+      audit:
+        enabled: true
+      container_vulnerability_management:
+        enabled: true
+      posture:
+        enabled: true
