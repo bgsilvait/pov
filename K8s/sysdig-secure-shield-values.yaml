@@ -1,12 +1,12 @@
 cluster_config:
   # The name of the cluster
-  name: CHANGE_ME_WITH_CLUSTER_NAME
+  name: [CHANGE_ME_WITH_CLUSTER_NAME]
 
 sysdig_endpoint:
   # Sysdig Secure instance location region
   region: eu1
-  # Access key for Sysdig Secure instance
-  access_key: CHANGE_ME_WITH_ACCESS_KEY
+  # Access key for Sysdig Secure instance/ Get it here: https://eu1.app.sysdig.com/secure/#/settings/agentInstallation
+  access_key: [CHANGE_ME_WITH_ACCESS_KEY]
   # Alternative endpoint to use 443 instead of the default 6443
   #collector:
     #host: ingest-alt-eu1.app.sysdig.com
@@ -67,6 +67,7 @@ features:
 host:
   # Driver for the host agent (Accepted Values: kmod, legacy_ebpf, universal_ebpf (Linux Kernel ≥ 5. 8))
   driver: universal_ebpf
+  privileged: false
   additional_settings:
     log:
       console_priority: warning # or none,  debug, info, warning, error
