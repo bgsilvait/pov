@@ -20,13 +20,19 @@ features:
   kubernetes_metadata:
     # Enable Kubernetes metadata collection for the cluster
     enabled: true
+  kube_state_metrics:
+    # Enable KSM metrics
+    enabled: true
+  kubernetes_events:
+    # Enable Kubernetes events collection
+    enabled: true
   monitor:
     app_checks:
       enabled: false
     java_management_extensions:
-      enabled: true
+      enabled: false
     prometheus:
-      enabled: true
+      enabled: false
       # The content of the prometheus.yaml file
       prometheus_yaml: {}
     statsd:
