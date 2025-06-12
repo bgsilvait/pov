@@ -1,0 +1,61 @@
+global:
+  sysdig:
+    accessKey: CHANGE_ME_WITH_ACCESS_KEY
+    region: eu1
+  clusterConfig:
+    name: CHANGE_ME_WITH_CLUSTER_NAME
+  kspm:
+    deploy: true  
+
+kspmCollector:
+  enabled: false
+
+admissionController:
+  enabled: false
+
+nodeAnalyzer:
+  nodeAnalyzer:
+    benchmarkRunner:
+      deploy: false
+    runtimeScanner:
+      deploy: false 
+    hostScanner:
+      scanOnStart: true
+  secure:
+    vulnerabilityManagement:
+      newEngineOnly: true
+
+agent:
+  monitor:
+    enabled: true
+  ebpf:
+    enabled: true
+    kind: universal_ebpf # If node kernel is >5.8
+  privileged: false # If node kernel is >5.8 or OS is RHCOS
+  sysdig:
+    settings:
+      feature:
+        mode: platform
+      k8s_extra_resources:
+        include:
+        - horizontalpodautoscalers
+        - ingresses
+        - services
+        - resourcequotas
+        - persistentvolumes
+        - persistentvolumeclaims
+        - poddisruptionbudgets
+
+clusterShield:
+  enabled: true
+  replicaCount: 1
+  cluster_shield:
+    features:
+      admission_control:
+        enabled: false
+      audit:
+        enabled: false
+      container_vulnerability_management:
+        enabled: true
+      posture:
+        enabled: true
