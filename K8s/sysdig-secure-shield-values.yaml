@@ -15,6 +15,20 @@ sysdig_endpoint:
 cluster:
   replica_count: 1
 
+#proxy: 
+  # HTTP proxy to use for all HTTP requests
+  #http_proxy:
+  # Provide the name of an existing Secret that contains the HTTP proxy
+  #http_proxy_existing_secret:
+  # HTTPS proxy to use for all HTTPS requests
+  #https_proxy:
+  # Provide the name of an existing Secret that contains the HTTPS proxy
+  #https_proxy_existing_secret:
+  # No proxy hosts and ips
+  #no_proxy:
+  # Provide the name of an existing Secret that contains the no proxy hosts
+  #no_proxy_existing_secret:
+
 features:
   kubernetes_metadata:
     # Enable Kubernetes metadata collection for the cluster
