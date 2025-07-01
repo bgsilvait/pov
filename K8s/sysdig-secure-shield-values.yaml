@@ -65,7 +65,7 @@ features:
       enabled: true
     kubernetes_audit:
       # Enable Kubernetes audit logging
-      enabled: true
+      enabled: false
 
   investigations:
     activity_audit:
