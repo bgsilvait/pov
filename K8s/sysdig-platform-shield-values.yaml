@@ -85,7 +85,6 @@ features:
 host:
   # Driver for the host agent (Accepted Values: kmod, legacy_ebpf, universal_ebpf (Linux Kernel ≥ 5. 8))
   driver: universal_ebpf
-  privileged: false
   additional_settings:
     log:
       console_priority: warning # or none,  debug, info, warning, error
