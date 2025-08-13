@@ -65,7 +65,12 @@ features:
       enabled: true
     kubernetes_audit:
       # Enable Kubernetes audit logging
-      enabled: false
+      enabled: true
+
+  respond:
+    response_actions:
+      # Enable OnDemand response actions
+      enabled: true
 
   investigations:
     activity_audit:
