@@ -14,6 +14,8 @@ sysdig_endpoint:
 
 cluster:
   replica_count: 1
+  additional_settings:
+    log_level: warning # or none,  debug, info, warning, error
 
 #proxy: 
   # HTTP proxy to use for all HTTP requests
@@ -89,3 +91,4 @@ host:
   additional_settings:
     log:
       console_priority: warning # or none,  debug, info, warning, error
+      file_priority: warning # or none,  debug, info, warning, error
