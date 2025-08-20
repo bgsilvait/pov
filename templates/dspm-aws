@@ -1,0 +1,337 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Bedrock Security Scan - Root Template for doing a scan of AWS resources.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Bedrock defined input. PLEASE DO NOT CHANGE.
+        Parameters:
+          - BedrockAccessKey
+          - BedrockOutputS3Bucket
+      - Label:
+          default: Customer defined input specifying AWS resources
+        Parameters:
+          - S3Buckets
+          - DynamoDBTables
+          - RDSInstances
+          - DocumentDBClusters
+          - DeployPushDownTags
+      - Label:
+          default: Redshift and EFS Configuration
+        Parameters:
+          - RedshiftClusters
+          - EFSFileSystems
+          - RedshiftUser
+          - CustomCloudformationRole
+      - Label:
+          default: Scan Configuration
+        Parameters:
+          - DeployGenomicsClassifier
+          - CustomTagLambdaARN
+          - KMSKeysForEncryption
+          - ResourceTagKey
+          - ResourceTagValue
+
+Parameters:
+  BedrockAccessKey:
+    Type: String
+    Description: Bedrock customer-specific access key. PLEASE DO NOT CHANGE.
+  BedrockOutputS3Bucket:
+    Type: String
+    Description: Bedrock-side output bucket. PLEASE DO NOT CHANGE.
+  S3Buckets:
+    Type: String
+    Description: Comma-delimited list of S3 Buckets to be scanned. Please enter only
+      the bucket names, not the ARN
+    Default: '*'
+  DynamoDBTables:
+    Type: String
+    Description: Comma-delimited list of DynamoDB tables to be risk assessed.
+    Default: ''
+  RDSInstances:
+    Type: String
+    Description: Comma-delimited list of RDS instances to be risk assessed.
+    Default: ''
+  DocumentDBClusters:
+    Type: String
+    Description: Comma-delimited list of DocumentDB clusters to be risk assessed.
+    Default: ''
+  RedshiftClusters:
+    Type: String
+    Description: Comma-delimited list of Redshift clusters to be risk assessed.
+    Default: ''
+  EFSFileSystems:
+    Type: String
+    Description: Comma-delimited list of EFS file systems to be risk assessed.
+    Default: ''
+  RedshiftUser:
+    Type: String
+    Description: String of Redshift user to be used when executing queries.
+    Default: N/A
+  CustomCloudformationRole:
+    Type: String
+    Description: ARN of custom cloudformation role to be used for deploying Bedrock
+      resources.
+    Default: ''
+  DeployGenomicsClassifier:
+    Type: String
+    Description: Whether to deploy the genomics classifier. If set to 'Yes', the
+      genomics classifier resources will be deployed.
+    Default: 'No'
+    AllowedValues:
+      - 'Yes'
+      - 'No'
+  DeployPushDownTags:
+    Type: String
+    Description: Whether to deploy the infrastructure to push down tags. If set to
+      'Yes', the push down tags resources will be deployed.
+    Default: 'Yes'
+    AllowedValues:
+      - 'Yes'
+      - 'No'
+  CustomTagLambdaARN:
+    Type: String
+    Description: ARN of the custom tag lambda function that can be used for tag
+      generation (optional).
+    Default: ''
+  KMSKeysForEncryption:
+    Type: String
+    Description: Comma-delimited list of KMS keys. These are needed if your datasets
+      are encrypted with KMS keys.
+    Default: ''
+  ResourceTagKey:
+    Type: String
+    Description: The key of the tag to be used for resource tagging.
+    Default: Bedrock
+  ResourceTagValue:
+    Type: String
+    Description: The value of the tag to be used for resource tagging.
+    Default: Bedrock
+
+Conditions:
+  ShouldDeployS3Dynamo: !Or
+    - !Not
+      - !Equals
+        - !Ref S3Buckets
+        - ''
+    - !Not
+      - !Equals
+        - !Ref DynamoDBTables
+        - ''
+  ShouldDeployRDS: !Not
+    - !Equals
+      - !Ref RDSInstances
+      - ''
+  ShouldDeployDocumentDB: !Not
+    - !Equals
+      - !Ref DocumentDBClusters
+      - ''
+  ShouldDeployRedshift: !Not
+    - !Equals
+      - !Ref RedshiftClusters
+      - ''
+  ShouldDeployEFS: !Not
+    - !Equals
+      - !Ref EFSFileSystems
+      - ''
+  ShouldDeployRedshiftEFS: !Or
+    - !Condition ShouldDeployRedshift
+    - !Condition ShouldDeployEFS
+  NeedsVPCForResources: !Or
+    - !Condition ShouldDeployRDS
+    - !Condition ShouldDeployDocumentDB
+
+Resources:
+  # Preparation Stack - Check for existing resources first
+  PrepStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://07f5628b-7351-4e2f-b1b3-e2eccb21670c-${AWS::Region}.s3.amazonaws.com/bedrock-security-aws-scan-prep.yml
+      Parameters:
+        ResourceTagKey: !Ref ResourceTagKey
+        ResourceTagValue: !Ref ResourceTagValue
+        BedrockAccessKey: !Ref BedrockAccessKey
+      Tags:
+        - Key: !Ref ResourceTagKey
+          Value: !Ref ResourceTagValue
+
+  # IAM Nested Stack - Deploy when it is not already deployed
+  IAMStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: PrepStack
+    Properties:
+      TemplateURL: !Sub https://07f5628b-7351-4e2f-b1b3-e2eccb21670c-${AWS::Region}.s3.amazonaws.com/bedrock-security-scan-iam.yml
+      Parameters:
+        IAMRoleExists: !GetAtt PrepStack.Outputs.IAMRoleExists
+      Tags:
+        - Key: !Ref ResourceTagKey
+          Value: !Ref ResourceTagValue
+
+  # VPC Nested Stack - Deploy when RDS or DocumentDB resources are needed
+  VPCStack:
+    Type: AWS::CloudFormation::Stack
+    # Deploy when NeedsVPCForResources is true
+    Condition: NeedsVPCForResources
+    DependsOn:
+      - PrepStack
+      - IAMStack
+    Properties:
+      TemplateURL: !Sub https://07f5628b-7351-4e2f-b1b3-e2eccb21670c-${AWS::Region}.s3.amazonaws.com/bedrock-security-scan-vpc.yml
+      Parameters:
+        VPCExists: !GetAtt PrepStack.Outputs.VPCExists
+        OutputKey: !Ref BedrockAccessKey
+      Tags:
+        - Key: !Ref ResourceTagKey
+          Value: !Ref ResourceTagValue
+
+  # AWS Resources Nested Stack (S3, DynamoDB)
+  S3DynamoResourcesStack:
+    Type: AWS::CloudFormation::Stack
+    Condition: ShouldDeployS3Dynamo
+    DependsOn:
+      - PrepStack
+      - IAMStack
+    Properties:
+      TemplateURL: !Sub https://07f5628b-7351-4e2f-b1b3-e2eccb21670c-${AWS::Region}.s3.amazonaws.com/bedrock-security-scan-s3-dynamo.yml
+      Parameters:
+        OutputKey: !Ref BedrockAccessKey
+        BedrockOutputS3Bucket: !Ref BedrockOutputS3Bucket
+        S3Buckets: !Ref S3Buckets
+        DynamoDBTables: !Ref DynamoDBTables
+        DeployGenomicsClassifier: !Ref DeployGenomicsClassifier
+        CustomTagLambdaARN: !Ref CustomTagLambdaARN
+        DeployPushDownTags: !Ref DeployPushDownTags
+        KMSKeysForEncryption: !Ref KMSKeysForEncryption
+        StartFirstScanImmediately: 'true'
+      Tags:
+        - Key: !Ref ResourceTagKey
+          Value: !Ref ResourceTagValue
+
+  # RDS Nested Stack
+  RDSStack:
+    Type: AWS::CloudFormation::Stack
+    Condition: ShouldDeployRDS
+    DependsOn:
+      - PrepStack
+      - IAMStack
+      - VPCStack
+    Properties:
+      TemplateURL: !Sub https://07f5628b-7351-4e2f-b1b3-e2eccb21670c-${AWS::Region}.s3.amazonaws.com/bedrock-security-scan-rds.yml
+      Parameters:
+        OutputKey: !Ref BedrockAccessKey
+        BedrockOutputS3Bucket: !Ref BedrockOutputS3Bucket
+        RDSInstances: !Ref RDSInstances
+        KMSKeysForEncryption: !Ref KMSKeysForEncryption
+        StartFirstScanImmediately: 'true'
+      Tags:
+        - Key: !Ref ResourceTagKey
+          Value: !Ref ResourceTagValue
+
+  # DocumentDB Nested Stack
+  DocumentDBStack:
+    Type: AWS::CloudFormation::Stack
+    Condition: ShouldDeployDocumentDB
+    DependsOn:
+      - PrepStack
+      - IAMStack
+      - VPCStack
+    Properties:
+      TemplateURL: !Sub https://07f5628b-7351-4e2f-b1b3-e2eccb21670c-${AWS::Region}.s3.amazonaws.com/bedrock-security-scan-documentdb.yml
+      Parameters:
+        OutputKey: !Ref BedrockAccessKey
+        BedrockOutputS3Bucket: !Ref BedrockOutputS3Bucket
+        DocumentDBClusters: !Ref DocumentDBClusters
+        KMSKeysForEncryption: !Ref KMSKeysForEncryption
+      Tags:
+        - Key: !Ref ResourceTagKey
+          Value: !Ref ResourceTagValue
+
+  # Redshift and EFS Scheduler Stack - Call scheduler with only Redshift and EFS
+  RedshiftEFSSchedulerStack:
+    Type: AWS::CloudFormation::Stack
+    Condition: ShouldDeployRedshiftEFS
+    DependsOn:
+      - PrepStack
+      - IAMStack
+    Properties:
+      TemplateURL: !Sub https://07f5628b-7351-4e2f-b1b3-e2eccb21670c-${AWS::Region}.s3.amazonaws.com/bedrock-aws-scheduler-root-cf.yml
+      Parameters:
+        RootStackId: !Ref AWS::StackId
+        BedrockAccessKey: !Ref BedrockAccessKey
+        BedrockArtifactsS3Bucket: 07f5628b-7351-4e2f-b1b3-e2eccb21670c
+        BedrockScanOutputS3Bucket: !Ref BedrockOutputS3Bucket
+        S3Buckets: ''
+        DynamoDBTables: ''
+        RDSInstances: ''
+        RedshiftClusters: !Ref RedshiftClusters
+        RedshiftUser: !Ref RedshiftUser
+        EFSFileSystems: !Ref EFSFileSystems
+        CustomCloudformationRole: !Ref CustomCloudformationRole
+        DeployInternalClassifier: 'No'
+        DeployRoninConfiguration: 'Yes'
+        DeployPushDownTags: 'No'
+        CustomTagLambdaARN: ''
+      Tags:
+        - Key: !Ref ResourceTagKey
+          Value: !Ref ResourceTagValue
+
+Outputs:
+  PrepStackId:
+    Description: Stack ID for preparation resources
+    Value: !Ref PrepStack
+    Export:
+      Name: !Sub ${AWS::StackName}-PrepStackId
+
+  IAMRoleExistsFromPrep:
+    Description: Whether IAM role exists (from prep stack)
+    Value: !GetAtt PrepStack.Outputs.IAMRoleExists
+    Export:
+      Name: !Sub ${AWS::StackName}-IAMRoleExists
+
+  VPCExistsFromPrep:
+    Description: Whether VPC exists (from prep stack)
+    Value: !GetAtt PrepStack.Outputs.VPCExists
+    Export:
+      Name: !Sub ${AWS::StackName}-VPCExists
+
+  IAMStackId:
+    Description: Stack ID for IAM resources
+    Value: !Ref IAMStack
+    Export:
+      Name: !Sub ${AWS::StackName}-IAMStackId
+
+  S3DynamoResourcesStackId:
+    Condition: ShouldDeployS3Dynamo
+    Description: Stack ID for AWS resources (S3, DynamoDB)
+    Value: !Ref S3DynamoResourcesStack
+    Export:
+      Name: !Sub ${AWS::StackName}-S3DynamoResourcesStackId
+
+  RDSStackId:
+    Condition: ShouldDeployRDS
+    Description: Stack ID for RDS resources
+    Value: !Ref RDSStack
+    Export:
+      Name: !Sub ${AWS::StackName}-RDSStackId
+
+  VPCStackId:
+    Condition: NeedsVPCForResources
+    Description: Stack ID for VPC resources
+    Value: !Ref VPCStack
+    Export:
+      Name: !Sub ${AWS::StackName}-VPCStackId
+
+  DocumentDBStackId:
+    Condition: ShouldDeployDocumentDB
+    Description: Stack ID for DocumentDB resources
+    Value: !Ref DocumentDBStack
+    Export:
+      Name: !Sub ${AWS::StackName}-DocumentDBStackId
+
+  RedshiftEFSSchedulerStackId:
+    Condition: ShouldDeployRedshiftEFS
+    Description: Stack ID for Redshift and EFS scheduler resources
+    Value: !Ref RedshiftEFSSchedulerStack
+    Export:
+      Name: !Sub ${AWS::StackName}-RedshiftEFSSchedulerStackId
