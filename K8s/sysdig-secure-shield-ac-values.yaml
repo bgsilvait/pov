@@ -39,7 +39,7 @@ features:
     # Enable the dry run mode
     dry_run: false
     # The timeout for the admission control feature
-    timeout: 5
+    timeout: 10
     container_vulnerability_management:
       # Enable the container vulnerability management feature on the admission control
       enabled: true
