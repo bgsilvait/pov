@@ -16,7 +16,7 @@ sysdig_endpoint:
 cluster:
   replica_count: 1
   additional_settings:
-    log_level: warn # or err, wanr, info, debug, trace
+    log_level: warn # or err, warn, info, debug, trace
 
 
 #proxy: 
