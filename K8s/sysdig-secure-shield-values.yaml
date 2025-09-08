@@ -4,12 +4,12 @@ cluster_config:
 
 sysdig_endpoint:
   # Sysdig Secure instance location region
-  region: eu1
-  # Access key for Sysdig Secure instance/ Get it here: https://eu1.app.sysdig.com/secure/#/settings/agentInstallation
+  region: eu2
+  # Access key for Sysdig Secure instance/ Get it here: https://app.eu2.sysdig.com/secure/#/settings/agentInstallation
   access_key: [CHANGE_ME_WITH_ACCESS_KEY]
   # Alternative endpoint to use 443 instead of the default 6443
   #collector:
-    #host: ingest-alt-eu1.app.sysdig.com
+    #host: ingest-alt.eu2.sysdig.com 
     #port: 443
 
 cluster:
