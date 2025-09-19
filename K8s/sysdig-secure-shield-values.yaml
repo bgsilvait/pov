@@ -4,7 +4,7 @@ cluster_config:
 
 sysdig_endpoint:
   # Sysdig Secure instance location region
-  region: eu2-alt
+  region: eu2
   # Access key for Sysdig Secure instance/ Get it here: https://app.eu2.sysdig.com/secure/#/settings/agentInstallation
   access_key: [CHANGE_ME_WITH_ACCESS_KEY]
   # Alternative endpoint to use 443 instead of the default 6443
