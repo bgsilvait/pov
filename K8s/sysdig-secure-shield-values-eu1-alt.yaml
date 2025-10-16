@@ -1,0 +1,94 @@
+cluster_config:
+  # The name of the cluster
+  name: [CHANGE_ME_WITH_CLUSTER_NAME]
+
+sysdig_endpoint:
+  # Sysdig Secure instance location region
+  region: eu1-alt
+  # Access key for Sysdig Secure instance/ Get it here: https://app.eu2.sysdig.com/secure/#/settings/agentInstallation
+  access_key: [CHANGE_ME_WITH_ACCESS_KEY]
+  # Alternative endpoint to use 443 instead of the default 6443
+  #collector:
+    #host: custom
+    #port: 443
+
+cluster:
+  replica_count: 1
+  additional_settings:
+    log_level: warn # or err, wanr, info, debug, trace
+
+#proxy: 
+  # HTTP proxy to use for all HTTP requests
+  #http_proxy:
+  # Provide the name of an existing Secret that contains the HTTP proxy
+  #http_proxy_existing_secret:
+  # HTTPS proxy to use for all HTTPS requests
+  #https_proxy:
+  # Provide the name of an existing Secret that contains the HTTPS proxy
+  #https_proxy_existing_secret:
+  # No proxy hosts and ips
+  #no_proxy:
+  # Provide the name of an existing Secret that contains the no proxy hosts
+  #no_proxy_existing_secret:
+
+features:
+  kubernetes_metadata:
+    # Enable Kubernetes metadata collection for the cluster
+    enabled: true
+
+  posture:
+    host_posture:
+      # Enable host posture assessment
+      enabled: true
+    cluster_posture:
+      # Enable cluster posture assessment
+      enabled: true
+
+  vulnerability_management:
+    host_vulnerability_management:
+      # Enable host vulnerability management
+      enabled: true
+    container_vulnerability_management:
+      # Enable container vulnerability management
+      enabled: true
+    in_use:
+      # Enable retrieval of in-use packages
+      enabled: true
+
+  detections:
+    drift_control:
+      # Enable drift control detection
+      enabled: true
+    malware_control:
+      # Enable malware control detection
+      enabled: true
+    ml_policies:
+      # Enable machine learning policies
+      enabled: true
+    kubernetes_audit:
+      # Enable Kubernetes audit logging
+      enabled: true
+
+  respond:
+    response_actions:
+      # Enable OnDemand response actions
+      enabled: true
+
+  investigations:
+    activity_audit:
+      # Enable activity audit
+      enabled: true
+    live_logs:
+      # Enable Kubernetes live logs
+      enabled: true
+    captures:
+      # Enable System captures
+      enabled: true
+
+host:
+  # Driver for the host agent (Accepted Values: kmod, legacy_ebpf, universal_ebpf (Linux Kernel ≥ 5. 8))
+  driver: universal_ebpf
+  additional_settings:
+    log:
+      console_priority: warning # or none,  debug, info, warning, error
+      file_priority: warning # or none,  debug, info, warning, error
